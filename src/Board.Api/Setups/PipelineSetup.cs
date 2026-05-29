@@ -31,7 +31,7 @@ internal static class PipelineSetup
 
         private void ConfigureHealthCheck()
         {
-            app.MapHealthChecks("/health", new HealthCheckOptions
+            app.MapHealthChecks("/", new HealthCheckOptions
             {
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
