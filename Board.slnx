@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/global/">
+    <File Path=".editorconfig"/>
+    <File Path=".gitignore"/>
+    <File Path=".dockerignore"/>
+    <File Path="compose.yml"/>
+    <File Path="Dockerfile"/>
+    <File Path="Directory.Build.Props"/>
+    <File Path="Directory.Packages.Props"/>
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Board.Api/Board.Api.csproj" />
+    <Project Path="src/Board.Application/Board.Application.csproj" />
+    <Project Path="src/Board.Domain/Board.Domain.csproj" />
+    <Project Path="src/Board.Infrastructure/Board.Infrastructure.csproj" />
+  </Folder>
+</Solution>

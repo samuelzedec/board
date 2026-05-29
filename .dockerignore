@@ -1,0 +1,58 @@
+# Builds e outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# IDEs e editores
+**/.vs/
+**/.vscode/
+**/.idea/
+*.user
+*.suo
+*.swp
+*.swo
+*.editorconfig
+
+# Dependências
+**/node_modules/
+**/packages/
+
+# Logs e temporários
+**/*.log
+**/logs/
+**/tmp/
+**/temp/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+.dockerignore
+**/Dockerfile*
+**/docker-compose*
+
+# CI/CD
+.github/
+**/.github/
+.gitlab-ci.yml
+
+# Documentação
+README.md
+LICENSE
+**/*.md
+docs/
+
+# Testes de performance/carga
+**/BenchmarkDotNet.Artifacts/
+
+# Coverage reports
+**/coverage/
+**/.sonarqube/
+**/TestResults/
+
+# OS específicos
+**/.DS_Store
+**/Thumbs.db

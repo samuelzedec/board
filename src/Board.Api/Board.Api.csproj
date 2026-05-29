@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <UserSecretsId>a739a8dc-0f56-4d1a-8a43-ed86448e01de</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client"/>
+    <PackageReference Include="Swashbuckle.AspNetCore"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Board.Application\Board.Application.csproj"/>
+    <ProjectReference Include="..\Board.Infrastructure\Board.Infrastructure.csproj"/>
+  </ItemGroup>
+</Project>
