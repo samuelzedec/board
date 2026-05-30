@@ -7,25 +7,19 @@ API REST para gerenciamento de boards, construída com ASP.NET Core 10, EF Core 
 ## Pré-requisitos
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Docker](https://www.docker.com/products/docker-desktop) (para o banco de dados)
+- [Docker](https://www.docker.com/products/docker-desktop)
 
 ---
 
-## Configuração do ambiente
+## Opção 1 — Rodar localmente (API na máquina + banco no Docker)
 
 ### 1. Suba o banco de dados
 
 ```bash
-docker run -d \
-  --name board-db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=board \
-  -p 5432:5432 \
-  postgres:18-alpine
+docker compose up -d database
 ```
 
-### 2. Configure a connection string
+### 2. Configure a connection string via user secrets
 
 ```bash
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" \
@@ -33,9 +27,7 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" \
   --project src/Board.Api
 ```
 
----
-
-## Rodando localmente
+### 3. Rode a API
 
 ```bash
 dotnet run --project src/Board.Api
@@ -43,21 +35,29 @@ dotnet run --project src/Board.Api
 
 As migrações são aplicadas automaticamente na inicialização.
 
-Acesse a documentação da API em: `http://localhost:5000/swagger`
+Acesse em: `http://localhost:5201/swagger`
 
 ---
 
-## Rodando com Docker (API + banco juntos)
+## Opção 2 — Rodar tudo com Docker (API + banco)
 
 ```bash
 docker compose up --build
 ```
 
-A API fica disponível em `http://localhost:8080/swagger`.
+Acesse em: `http://localhost:8080/swagger`
+
+> O Swagger só fica disponível no ambiente `Development`.
 
 ---
 
 ## Migrações
+
+Restaure as ferramentas locais antes de usar o `dotnet-ef`:
+
+```bash
+dotnet tool restore
+```
 
 ### Criar uma nova migração
 
@@ -89,14 +89,14 @@ src/
 └── Board.Domain         # Entidades, interfaces de repositório
 ```
 
-Consulte a pasta `docs/` para detalhes sobre arquitetura, features e tratamento de erros.
+Consulte a pasta `docs/` para detalhes sobre o modelo de dados.
 
 ---
 
 ## Health check
 
 ```
-GET /health
+GET /
 ```
 
 ---
