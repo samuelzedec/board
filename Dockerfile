@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /app
 
-COPY Directory.Build.props Directory.Packages.props ./
+COPY Directory.Build.props Directory.Packages.props nuget.config ./
 COPY src/Board.Api/Board.Api.csproj ./src/Board.Api/
 COPY src/Board.Application/Board.Application.csproj ./src/Board.Application/
 COPY src/Board.Infrastructure/Board.Infrastructure.csproj ./src/Board.Infrastructure/
