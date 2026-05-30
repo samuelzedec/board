@@ -9,6 +9,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="BCrypt.Net-Next" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Board.Application\Board.Application.csproj" />
