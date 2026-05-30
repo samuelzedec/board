@@ -1,4 +1,6 @@
+using Board.Domain.Repositories;
 using Board.Infrastructure.Persistence;
+using Board.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +26,7 @@ public static class DependencyInjection
         {
             builder.ConfigureDbContext();
             builder.ConfigureHealthChecks();
+            builder.ConfigureRepositories();
         }
 
         private void ConfigureDbContext()
@@ -31,7 +34,11 @@ public static class DependencyInjection
             var isDevelopment = builder.Environment.IsDevelopment();
 
             builder.Services.AddDbContext<BoardDbContext>(options => options
-                .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+                .UseNpgsql(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    npgsql => npgsql
+                        .MigrationsAssembly(typeof(BoardDbContext).Assembly.FullName)
+                        .MigrationsHistoryTable("__ef_migrations_history", "public"))
                 .EnableSensitiveDataLogging(isDevelopment)
                 .EnableDetailedErrors(isDevelopment));
         }
@@ -41,6 +48,15 @@ public static class DependencyInjection
             builder.Services
                 .AddHealthChecks()
                 .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
+        }
+
+        private void ConfigureRepositories()
+        {
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+            builder.Services.AddScoped<IColumnRepository, ColumnRepository>();
+            builder.Services.AddScoped<ICardRepository, CardRepository>();
+            builder.Services.AddScoped<ICommentRepository, CommentRepository>();
         }
     }
 }

@@ -18,8 +18,9 @@ internal sealed class BoardDbContextFactory
         var dbContextOptionsBuilder = new DbContextOptionsBuilder<BoardDbContext>()
             .UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
-                npgsql => npgsql.MigrationsAssembly(typeof(BoardDbContext).Assembly.FullName)
-            );
+                npgsql => npgsql
+                    .MigrationsAssembly(typeof(BoardDbContext).Assembly.FullName)
+                    .MigrationsHistoryTable("__ef_migrations_history", "public"));
 
         return new BoardDbContext(dbContextOptionsBuilder.Options);
     }
