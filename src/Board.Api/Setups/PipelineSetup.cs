@@ -16,6 +16,8 @@ internal static class PipelineSetup
             app.ConfigureHealthCheck();
             app.ConfigureApiDocumentation();
             app.UseExceptionHandler();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapControllers();
             await app.ApplyMigrationsAsync();
         }
