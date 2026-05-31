@@ -2,6 +2,7 @@ using Board.Application.Features.Users.CreateUser;
 using Board.Application.Features.Users.GetUserById;
 using Board.Application.Features.Users.GetUsers;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Board.Api.Controllers;
@@ -11,6 +12,7 @@ namespace Board.Api.Controllers;
 public sealed class UserController(ISender sender) : ControllerBase
 {
     [HttpPost]
+    [AllowAnonymous]
     [ProducesResponseType<CreateUserResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
@@ -23,7 +25,9 @@ public sealed class UserController(ISender sender) : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     [ProducesResponseType<IReadOnlyList<GetUsersResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken)
     {
         var response = await sender.Send(new GetUsersQuery(), cancellationToken);
@@ -31,7 +35,9 @@ public sealed class UserController(ISender sender) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize]
     [ProducesResponseType<GetUserByIdResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByIdAsync(
         Guid id,
