@@ -11,4 +11,9 @@ internal sealed class UserRepository(BoardDbContext context)
         => await _table
             .AsNoTracking()
             .SingleOrDefaultAsync(x => x.Email == email, cancellationToken);
+
+    public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default)
+        => await _table
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 }
