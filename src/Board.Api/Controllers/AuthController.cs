@@ -1,3 +1,4 @@
+using Board.Application.Features.Auth.GetMe;
 using Board.Application.Features.Auth.Login;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,16 @@ public sealed class AuthController(ISender sender) : ControllerBase
         CancellationToken cancellationToken)
     {
         var response = await sender.Send(command, cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType<GetMeResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMeAsync(CancellationToken cancellationToken)
+    {
+        var response = await sender.Send(new GetMeQuery(), cancellationToken);
         return Ok(response);
     }
 }
