@@ -1,5 +1,6 @@
 using Board.Application.Features.Comments.CreateComment;
 using Board.Application.Features.Comments.DeleteComment;
+using Board.Application.Features.Comments.UpdateComment;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,24 @@ public sealed class CommentController(ISender sender) : ControllerBase
     {
         var response = await sender.Send(command with { CardId = cardId }, cancellationToken);
         return Created($"api/cards/{cardId}/comments/{response.Id}", response);
+    }
+
+    [HttpPut("{commentId:guid}")]
+    [ProducesResponseType<UpdateCommentResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateAsync(
+        Guid cardId,
+        Guid commentId,
+        UpdateCommentCommand command,
+        CancellationToken cancellationToken)
+    {
+        var response = await sender.Send(
+            command with { CardId = cardId, CommentId = commentId },
+            cancellationToken);
+        return Ok(response);
     }
 
     [HttpDelete("{commentId:guid}")]
