@@ -1,4 +1,5 @@
 using Board.Application.Features.Users.CreateUser;
+using Board.Application.Features.Users.GetUsers;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,5 +19,13 @@ public sealed class UserController(ISender sender) : ControllerBase
     {
         var response = await sender.Send(command, cancellationToken);
         return Created($"api/users/{response.Id}", response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType<IReadOnlyList<GetUsersResponse>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var response = await sender.Send(new GetUsersQuery(), cancellationToken);
+        return Ok(response);
     }
 }
