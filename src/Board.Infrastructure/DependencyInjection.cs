@@ -3,6 +3,8 @@ using Board.Domain.Repositories;
 using Board.Infrastructure.Persistence;
 using Board.Infrastructure.Persistence.Repositories;
 using Board.Infrastructure.Security;
+using Board.Infrastructure.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,7 +56,10 @@ public static class DependencyInjection
 
         private void ConfigureRepositories()
         {
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
+            builder.Services.AddSingleton<ITokenService, JwtTokenService>();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
             builder.Services.AddScoped<IColumnRepository, ColumnRepository>();
