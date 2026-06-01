@@ -13,6 +13,6 @@
     <PackageReference Include="BCrypt.Net-Next" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Board.Application\Board.Application.csproj" />
+    <ProjectReference Include="../Board.Application/Board.Application.csproj" />
   </ItemGroup>
 </Project>
