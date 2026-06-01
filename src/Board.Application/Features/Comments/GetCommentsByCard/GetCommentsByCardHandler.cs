@@ -15,7 +15,11 @@ internal sealed class GetCommentsByCardHandler(
     {
         await EnsureCardExistsAsync(query.CardId, cancellationToken);
 
-        var comments = await commentRepository.GetByCardIdAsync(query.CardId, cancellationToken);
+        var comments = await commentRepository.GetByCardIdAsync(
+            query.CardId,
+            query.AuthorId,
+            query.Search,
+            cancellationToken);
 
         return comments
             .Select(comment => new GetCommentsByCardResponse(

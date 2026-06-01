@@ -4,5 +4,9 @@ namespace Board.Domain.Repositories;
 
 public interface ICommentRepository : IRepository<Comment>
 {
-    Task<IReadOnlyList<Comment>> GetByCardIdAsync(Guid cardId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Comment>> GetByCardIdAsync(
+        Guid cardId,
+        Guid? authorId = null,
+        string? search = null,
+        CancellationToken cancellationToken = default);
 }
