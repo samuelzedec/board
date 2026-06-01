@@ -33,9 +33,13 @@ public sealed class CommentController(ISender sender) : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByCardAsync(
         Guid cardId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] Guid? authorId = null,
+        [FromQuery] string? search = null)
     {
-        var response = await sender.Send(new GetCommentsByCardQuery(cardId), cancellationToken);
+        var response = await sender.Send(
+            new GetCommentsByCardQuery(cardId, authorId, search),
+            cancellationToken);
         return Ok(response);
     }
 

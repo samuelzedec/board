@@ -9,10 +9,22 @@ internal sealed class CommentRepository(BoardDbContext context)
 {
     public async Task<IReadOnlyList<Comment>> GetByCardIdAsync(
         Guid cardId,
+        Guid? authorId = null,
+        string? search = null,
         CancellationToken cancellationToken = default)
-        => await _table
+    {
+        var query = _table
             .AsNoTracking()
-            .Where(c => c.CardId == cardId)
+            .Where(c => c.CardId == cardId);
+
+        if (authorId is not null)
+            query = query.Where(c => c.AuthorId == authorId);
+
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(c => EF.Functions.ILike(c.Content, $"%{search}%"));
+
+        return await query
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync(cancellationToken);
+    }
 }
