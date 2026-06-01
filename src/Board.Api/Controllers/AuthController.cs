@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Board.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/auth")]
 public sealed class AuthController(ISender sender) : ControllerBase
 {
@@ -24,7 +25,6 @@ public sealed class AuthController(ISender sender) : ControllerBase
     }
 
     [HttpGet("me")]
-    [Authorize]
     [ProducesResponseType<GetMeResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetMeAsync(CancellationToken cancellationToken)

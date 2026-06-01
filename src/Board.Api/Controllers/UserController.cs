@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Board.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/users")]
 public sealed class UserController(ISender sender) : ControllerBase
 {
@@ -25,7 +26,6 @@ public sealed class UserController(ISender sender) : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
     [ProducesResponseType<IReadOnlyList<GetUsersResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken)
@@ -35,7 +35,6 @@ public sealed class UserController(ISender sender) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [Authorize]
     [ProducesResponseType<GetUserByIdResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]

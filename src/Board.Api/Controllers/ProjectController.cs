@@ -1,10 +1,12 @@
 ﻿using Board.Application.Features.Projects.CreateProject;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Board.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/projects")]
 public sealed class ProjectController(ISender sender) : ControllerBase
 {

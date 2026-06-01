@@ -7,7 +7,6 @@ namespace Board.Infrastructure.Persistence.Repositories;
 internal sealed class ProjectRepository(BoardDbContext context)
     : Repository<Project>(context), IProjectRepository
 {
-    
     public Task<Project?> GetByNameAndOwnerAsync(
         string name,
         Guid ownerId,
