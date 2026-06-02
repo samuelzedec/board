@@ -1,4 +1,5 @@
 ﻿using Board.Application.Features.Projects.CreateProject;
+using Board.Application.Features.Projects.DeleteProject;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,5 +22,18 @@ public sealed class ProjectController(ISender sender) : ControllerBase
     {
         var response = await sender.Send(command, cancellationToken);
         return Created($"api/projects/{response.Id}", response);
+    }
+
+    [HttpDelete("{projectId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteAsync(
+        Guid projectId,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(new DeleteProjectCommand(projectId), cancellationToken);
+        return NoContent();
     }
 }
