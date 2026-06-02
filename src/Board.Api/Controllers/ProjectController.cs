@@ -1,6 +1,5 @@
 using Board.Application.Features.Projects.CreateProject;
 using Board.Application.Features.Projects.DeleteProject;
-using Board.Application.Features.Projects.CreateProject;
 using Board.Application.Features.Projects.GetProjects;
 using Board.Application.Features.Projects.UpdateProject;
 using Mediator;
