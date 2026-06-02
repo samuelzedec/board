@@ -29,8 +29,7 @@ internal sealed class GetColumnsByProjectHandler(
                 column.ProjectId,
                 column.Name,
                 column.Order,
-                column.CreatedAt
-            ))
+                column.CreatedAt))
             .ToList();
     }
 }
