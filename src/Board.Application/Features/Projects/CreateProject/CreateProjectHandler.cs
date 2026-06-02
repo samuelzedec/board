@@ -22,7 +22,6 @@ internal sealed class CreateProjectHandler(
         await EnsureNameIsAvailableAsync(command.Name, ownerId, cancellationToken);
 
         var project = MapToEntity(command, ownerId);
-
         await projectRepository.AddAsync(project, cancellationToken);
 
         return new CreateProjectResponse(
