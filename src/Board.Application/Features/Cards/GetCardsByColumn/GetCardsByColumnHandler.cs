@@ -1,3 +1,4 @@
+using Board.Application.Abstractions;
 using Board.Application.Exceptions;
 using Board.Domain.Repositories;
 using Mediator;
@@ -6,14 +7,19 @@ namespace Board.Application.Features.Cards.GetCardsByColumn;
 
 internal sealed class GetCardsByColumnHandler(
     ICardRepository cardRepository,
-    IColumnRepository columnRepository)
+    IColumnRepository columnRepository,
+    IProjectRepository projectRepository,
+    ICurrentUserService currentUserService)
     : IQueryHandler<GetCardsByColumnQuery, IReadOnlyList<GetCardsByColumnResponse>>
 {
     public async ValueTask<IReadOnlyList<GetCardsByColumnResponse>> Handle(
         GetCardsByColumnQuery query,
         CancellationToken cancellationToken)
     {
-        await EnsureColumnExistsAsync(query.ColumnId, cancellationToken);
+        var column = await columnRepository.GetByIdAsync(query.ColumnId, cancellationToken)
+            ?? throw new NotFoundException("Coluna não encontrada.");
+
+        await EnsureCurrentUserOwnsProjectAsync(column.ProjectId, cancellationToken);
 
         var cards = await cardRepository.GetByColumnIdAsync(query.ColumnId, cancellationToken);
 
@@ -32,11 +38,12 @@ internal sealed class GetCardsByColumnHandler(
             .ToList();
     }
 
-    private async Task EnsureColumnExistsAsync(Guid columnId, CancellationToken cancellationToken)
+    private async Task EnsureCurrentUserOwnsProjectAsync(Guid projectId, CancellationToken cancellationToken)
     {
-        var column = await columnRepository.GetByIdAsync(columnId, cancellationToken);
+        var project = await projectRepository.GetByIdAsync(projectId, cancellationToken)
+            ?? throw new NotFoundException("Projeto não encontrado.");
 
-        if (column is null)
-            throw new NotFoundException("Coluna não encontrada.");
+        if (project.OwnerId != currentUserService.GetUserId())
+            throw new ForbiddenException("Apenas o dono do projeto pode visualizar os cards.");
     }
 }

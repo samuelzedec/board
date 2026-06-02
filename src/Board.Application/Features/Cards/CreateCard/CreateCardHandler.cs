@@ -1,3 +1,4 @@
+using Board.Application.Abstractions;
 using Board.Application.Exceptions;
 using Board.Domain.Entities;
 using Board.Domain.Repositories;
@@ -8,14 +9,19 @@ namespace Board.Application.Features.Cards.CreateCard;
 internal sealed class CreateCardHandler(
     ICardRepository cardRepository,
     IColumnRepository columnRepository,
-    IUserRepository userRepository)
+    IProjectRepository projectRepository,
+    IUserRepository userRepository,
+    ICurrentUserService currentUserService)
     : ICommandHandler<CreateCardCommand, CreateCardResponse>
 {
     public async ValueTask<CreateCardResponse> Handle(
         CreateCardCommand command,
         CancellationToken cancellationToken)
     {
-        await EnsureColumnExistsAsync(command.ColumnId, cancellationToken);
+        var column = await columnRepository.GetByIdAsync(command.ColumnId, cancellationToken)
+            ?? throw new NotFoundException("Coluna não encontrada.");
+
+        await EnsureCurrentUserOwnsProjectAsync(column.ProjectId, cancellationToken);
         await EnsureAssigneeExistsAsync(command.AssigneeId, cancellationToken);
 
         var nextOrder = await GetNextOrderAsync(command.ColumnId, cancellationToken);
@@ -47,12 +53,13 @@ internal sealed class CreateCardHandler(
             card.CreatedAt);
     }
 
-    private async Task EnsureColumnExistsAsync(Guid columnId, CancellationToken cancellationToken)
+    private async Task EnsureCurrentUserOwnsProjectAsync(Guid projectId, CancellationToken cancellationToken)
     {
-        var column = await columnRepository.GetByIdAsync(columnId, cancellationToken);
+        var project = await projectRepository.GetByIdAsync(projectId, cancellationToken)
+            ?? throw new NotFoundException("Projeto não encontrado.");
 
-        if (column is null)
-            throw new NotFoundException("Coluna não encontrada.");
+        if (project.OwnerId != currentUserService.GetUserId())
+            throw new ForbiddenException("Apenas o dono do projeto pode gerenciar os cards.");
     }
 
     private async Task EnsureAssigneeExistsAsync(Guid? assigneeId, CancellationToken cancellationToken)
