@@ -8,5 +8,5 @@ public interface IProjectRepository : IRepository<Project>
         string name,
         Guid ownerId,
         CancellationToken cancellationToken = default);
-    Task<Project[]> GetByOwnerAsync(Guid ownerId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Project>> GetByOwnerAsync(Guid ownerId, CancellationToken cancellationToken = default);
 }
