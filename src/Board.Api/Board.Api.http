@@ -1,6 +1,295 @@
-@Board.Api_HostAddress = http://localhost:5201
+###############################################################################
+# Board API — Coleção de testes (.http)
+#
+# Cobre TODAS as entidades e rotas: Health, Users, Auth, Projects, Columns,
+# Cards e Comments. Abre nativo no Rider/Visual Studio e no VS Code
+# (extensão "REST Client").
+#
+# -------------------------- COMO USAR -----------------------------------------
+# 1. Suba o banco e a API:
+#      docker compose up -d database
+#      ConnectionStrings__DefaultConnection="Host=localhost;Port=5432;Database=board;Username=postgres;Password=postgres" \
+#        dotnet run --project src/Board.Api
+# 2. Rode as requisições de cima para baixo (clique em "Send Request" / ▶).
+# 3. Algumas requisições devolvem token/ids que você COLA nas variáveis @ abaixo.
+#    Cada bloco indica de onde copiar o valor.
+#
+# Não há seed manual: o fluxo cria projeto -> coluna -> card -> comentário pela API.
+###############################################################################
 
-GET {{Board.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+@host = http://localhost:5201
+
+# >>> Preencha conforme for executando as requisições <<<
+@token = COLE_AQUI_O_TOKEN_DO_LOGIN
+@userId = COLE_AQUI_O_ID_DA_ALICE
+@assigneeId = COLE_AQUI_O_ID_DO_BOB
+@projectId = COLE_AQUI_O_ID_DO_PROJETO
+@columnId = COLE_AQUI_O_ID_DE_UMA_COLUNA
+@cardId = COLE_AQUI_O_ID_DE_UM_CARD
+@commentId = COLE_AQUI_O_ID_DE_UM_COMENTARIO
+
+
+###############################################################################
+# 0) HEALTH CHECK  (público)
+###############################################################################
+
+### Status da API + conexão com o Postgres
+GET {{host}}/
+
+
+###############################################################################
+# 1) USERS
+###############################################################################
+
+### 1.1 Registrar usuário (público) — Alice (será a dona do projeto)
+# Senha: 8+ chars, ao menos 1 número e 1 caractere especial. Ex.: senha@123
+POST {{host}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Alice",
+  "email": "alice@test.com",
+  "password": "senha@123"
+}
+
+### 1.2 Registrar um segundo usuário (público) — Bob (responsável de card / autor de comentário)
+POST {{host}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Bob",
+  "email": "bob@test.com",
+  "password": "senha@123"
+}
+
+### 1.3 Listar usuários (protegido) — copie o "id" da Alice p/ @userId e o do Bob p/ @assigneeId
+GET {{host}}/api/users
+Authorization: Bearer {{token}}
+
+### 1.4 Buscar usuário por id (protegido)
+GET {{host}}/api/users/{{userId}}
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 2) AUTH
+###############################################################################
+
+### 2.1 Login (público) — copie o "token" da resposta para a variável @token
+# A senha é case-sensitive e deve ser idêntica à do registro.
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@test.com",
+  "password": "senha@123"
+}
+
+### 2.2 Dados do usuário autenticado (protegido)
+GET {{host}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### 2.3 (negativo) Acessar rota protegida sem token  ->  401 Unauthorized
+GET {{host}}/api/auth/me
+
+
+###############################################################################
+# 3) PROJECTS
+###############################################################################
+
+### 3.1 Criar projeto (protegido) — copie o "id" da resposta para @projectId
+# NÃO envie ownerId: o dono vem do token. Cria automaticamente 3 colunas padrão.
+# color: hexadecimal #RRGGBB.
+POST {{host}}/api/projects
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Quadro Demo",
+  "description": "Quadro de exemplo",
+  "color": "#3498DB"
+}
+
+### 3.2 Listar meus projetos (protegido)
+GET {{host}}/api/projects
+Authorization: Bearer {{token}}
+
+### 3.3 Atualizar projeto (protegido) — só o dono; senão 403
+PUT {{host}}/api/projects/{{projectId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Quadro Demo (renomeado)",
+  "description": "Descrição atualizada",
+  "color": "#FF8800",
+  "isActive": true
+}
+
+### 3.4 (negativo) Cor em formato inválido  ->  400 Bad Request
+POST {{host}}/api/projects
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Projeto Cor Inválida",
+  "description": null,
+  "color": "azul"
+}
+
+
+###############################################################################
+# 4) COLUMNS  (aninhado em /api/projects/{projectId}/columns)
+###############################################################################
+
+### 4.1 Listar colunas do projeto (protegido) — copie o id de "A Fazer" p/ @columnId
+GET {{host}}/api/projects/{{projectId}}/columns
+Authorization: Bearer {{token}}
+
+### 4.2 Buscar coluna por id (protegido)
+GET {{host}}/api/projects/{{projectId}}/columns/{{columnId}}
+Authorization: Bearer {{token}}
+
+### 4.3 Criar nova coluna (protegido) — só o dono
+# order deve ser >= 1 e único no projeto (0,1,2 já existem nas colunas padrão; use 3+).
+POST {{host}}/api/projects/{{projectId}}/columns
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Revisão",
+  "order": 3
+}
+
+### 4.4 Excluir coluna (protegido) — só o dono; 204 No Content
+# Use o id de uma coluna criada acima (ex.: "Revisão"); cuidado: apaga os cards dela.
+DELETE {{host}}/api/projects/{{projectId}}/columns/{{columnId}}
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 5) CARDS  (POST/GET em /api/columns/{columnId}/cards; item em /api/cards/{cardId})
+###############################################################################
+
+### 5.1 Criar card (protegido) — copie o "id" para @cardId
+# priority: None | Low | Medium | High | Urgent (string). assigneeId/dueDate opcionais.
+# order é gerado pelo servidor (não enviar).
+POST {{host}}/api/columns/{{columnId}}/cards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Configurar CI",
+  "description": "pipeline de build",
+  "assigneeId": "{{assigneeId}}",
+  "dueDate": "2026-07-01",
+  "priority": "High"
+}
+
+### 5.2 Criar um segundo card (protegido) — sem responsável, prioridade baixa
+POST {{host}}/api/columns/{{columnId}}/cards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Escrever testes",
+  "description": null,
+  "assigneeId": null,
+  "dueDate": null,
+  "priority": "Low"
+}
+
+### 5.3 Listar cards da coluna (protegido) — SEM filtro
+GET {{host}}/api/columns/{{columnId}}/cards
+Authorization: Bearer {{token}}
+
+### 5.4 Filtrar cards por prioridade (protegido)
+GET {{host}}/api/columns/{{columnId}}/cards?priority=High
+Authorization: Bearer {{token}}
+
+### 5.5 Filtrar cards por responsável (protegido)
+GET {{host}}/api/columns/{{columnId}}/cards?assigneeId={{assigneeId}}
+Authorization: Bearer {{token}}
+
+### 5.6 Filtros combinados: prioridade + responsável (protegido)
+GET {{host}}/api/columns/{{columnId}}/cards?priority=High&assigneeId={{assigneeId}}
+Authorization: Bearer {{token}}
+
+### 5.7 Buscar card por id (protegido)
+GET {{host}}/api/cards/{{cardId}}
+Authorization: Bearer {{token}}
+
+### 5.8 Atualizar card (protegido) — só o dono do projeto
+PUT {{host}}/api/cards/{{cardId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Configurar CI/CD",
+  "description": "com etapa de deploy",
+  "assigneeId": "{{assigneeId}}",
+  "dueDate": "2026-08-01",
+  "priority": "Urgent"
+}
+
+### 5.9 (negativo) Prioridade inválida  ->  400 Bad Request
+POST {{host}}/api/columns/{{columnId}}/cards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Card inválido",
+  "priority": "Banana"
+}
+
+### 5.10 Excluir card (protegido) — 204 No Content
+DELETE {{host}}/api/cards/{{cardId}}
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 6) COMMENTS  (aninhado em /api/cards/{cardId}/comments — tudo protegido)
+###############################################################################
+
+### 6.1 Criar comentário (protegido) — autor vem do token. Copie o "id" p/ @commentId
+POST {{host}}/api/cards/{{cardId}}/comments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Preciso revisar o deploy urgente"
+}
+
+### 6.2 Listar comentários do card (protegido) — SEM filtro
+GET {{host}}/api/cards/{{cardId}}/comments
+Authorization: Bearer {{token}}
+
+### 6.3 Filtrar por autor (protegido)
+GET {{host}}/api/cards/{{cardId}}/comments?authorId={{userId}}
+Authorization: Bearer {{token}}
+
+### 6.4 Buscar por texto no conteúdo, case-insensitive (protegido)
+GET {{host}}/api/cards/{{cardId}}/comments?search=deploy
+Authorization: Bearer {{token}}
+
+### 6.5 Filtros combinados: autor + busca (protegido)
+GET {{host}}/api/cards/{{cardId}}/comments?authorId={{userId}}&search=deploy
+Authorization: Bearer {{token}}
+
+### 6.6 Editar comentário (protegido) — só o autor pode; senão 403
+PUT {{host}}/api/cards/{{cardId}}/comments/{{commentId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Comentário editado"
+}
+
+### 6.7 (negativo) Listar sem token  ->  401 Unauthorized
+GET {{host}}/api/cards/{{cardId}}/comments
+
+### 6.8 Excluir comentário (protegido) — autor OU dono do projeto (moderação); 204
+DELETE {{host}}/api/cards/{{cardId}}/comments/{{commentId}}
+Authorization: Bearer {{token}}
 
 ###
