@@ -1,4 +1,5 @@
 using Board.Domain.Entities;
+using Board.Domain.Enums;
 using Board.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,22 @@ internal sealed class CardRepository(BoardDbContext context)
 {
     public async Task<IReadOnlyList<Card>> GetByColumnIdAsync(
         Guid columnId,
+        Guid? assigneeId = null,
+        Priority? priority = null,
         CancellationToken cancellationToken = default)
-        => await _table
+    {
+        var query = _table
             .AsNoTracking()
-            .Where(c => c.ColumnId == columnId)
+            .Where(c => c.ColumnId == columnId);
+
+        if (assigneeId is not null)
+            query = query.Where(c => c.AssigneeId == assigneeId);
+
+        if (priority is not null)
+            query = query.Where(c => c.Priority == priority);
+
+        return await query
             .OrderBy(c => c.Order)
             .ToListAsync(cancellationToken);
+    }
 }

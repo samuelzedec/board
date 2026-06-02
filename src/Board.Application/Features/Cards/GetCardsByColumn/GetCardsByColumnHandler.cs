@@ -21,7 +21,11 @@ internal sealed class GetCardsByColumnHandler(
 
         await EnsureCurrentUserOwnsProjectAsync(column.ProjectId, cancellationToken);
 
-        var cards = await cardRepository.GetByColumnIdAsync(query.ColumnId, cancellationToken);
+        var cards = await cardRepository.GetByColumnIdAsync(
+            query.ColumnId,
+            query.AssigneeId,
+            query.Priority,
+            cancellationToken);
 
         return cards
             .Select(card => new GetCardsByColumnResponse(

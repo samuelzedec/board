@@ -75,7 +75,7 @@ internal sealed class CreateCardHandler(
 
     private async Task<int> GetNextOrderAsync(Guid columnId, CancellationToken cancellationToken)
     {
-        var cards = await cardRepository.GetByColumnIdAsync(columnId, cancellationToken);
+        var cards = await cardRepository.GetByColumnIdAsync(columnId, cancellationToken: cancellationToken);
         return cards.Count == 0 ? 0 : cards.Max(c => c.Order) + 1;
     }
 }

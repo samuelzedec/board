@@ -3,6 +3,7 @@ using Board.Application.Features.Cards.DeleteCard;
 using Board.Application.Features.Cards.GetCardById;
 using Board.Application.Features.Cards.GetCardsByColumn;
 using Board.Application.Features.Cards.UpdateCard;
+using Board.Domain.Enums;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,9 +34,13 @@ public sealed class CardController(ISender sender) : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetByColumnAsync(
         Guid columnId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] Guid? assigneeId = null,
+        [FromQuery] Priority? priority = null)
     {
-        var response = await sender.Send(new GetCardsByColumnQuery(columnId), cancellationToken);
+        var response = await sender.Send(
+            new GetCardsByColumnQuery(columnId, assigneeId, priority),
+            cancellationToken);
         return Ok(response);
     }
 
