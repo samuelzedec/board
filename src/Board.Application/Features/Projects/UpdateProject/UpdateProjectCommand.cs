@@ -7,5 +7,6 @@ public sealed record UpdateProjectCommand(
     [property: JsonIgnore] Guid ProjectId,
     string Name,
     string? Description,
-    string Color
+    string Color,
+    bool IsActive
 ) : ICommand<UpdateProjectResponse>;

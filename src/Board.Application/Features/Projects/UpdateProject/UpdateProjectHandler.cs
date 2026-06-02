@@ -25,6 +25,7 @@ internal sealed class UpdateProjectHandler(
         project.Name = command.Name;
         project.Description = command.Description;
         project.Color = command.Color;
+        project.IsActive = command.IsActive;
 
         await projectRepository.UpdateAsync(project, cancellationToken);
 
