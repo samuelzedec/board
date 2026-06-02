@@ -1,4 +1,6 @@
 using Board.Application.Features.Projects.CreateProject;
+using Board.Application.Features.Projects.DeleteProject;
+using Board.Application.Features.Projects.CreateProject;
 using Board.Application.Features.Projects.GetProjects;
 using Board.Application.Features.Projects.UpdateProject;
 using Mediator;
@@ -34,6 +36,19 @@ public sealed class ProjectController(ISender sender) : ControllerBase
         return Created($"api/projects/{response.Id}", response);
     }
 
+    [HttpDelete("{projectId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteAsync(
+        Guid projectId,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(new DeleteProjectCommand(projectId), cancellationToken);
+        return NoContent();
+    }
+
     [HttpPut("{projectId:guid}")]
     [ProducesResponseType<UpdateProjectResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -46,9 +61,7 @@ public sealed class ProjectController(ISender sender) : ControllerBase
         UpdateProjectCommand command,
         CancellationToken cancellationToken)
     {
-        var response = await sender.Send(
-            command with { ProjectId = projectId },
-            cancellationToken);
+        var response = await sender.Send(command with { ProjectId = projectId }, cancellationToken);
         return Ok(response);
     }
 }
