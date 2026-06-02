@@ -17,6 +17,8 @@ internal sealed class ProjectRepository(BoardDbContext context)
     
     public Task<Project[]> GetByOwnerAsync(Guid ownerId, CancellationToken cancellationToken = default)
         => _table
+            .AsNoTracking()
             .Where(p => p.OwnerId == ownerId)
+            .OrderByDescending(p => p.CreatedAt)
             .ToArrayAsync(cancellationToken);
 }
