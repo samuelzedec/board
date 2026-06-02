@@ -9,6 +9,8 @@ namespace Board.Application.Features.Comments.DeleteComment;
 internal sealed class DeleteCommentHandler(
     ICommentRepository commentRepository,
     ICardRepository cardRepository,
+    IColumnRepository columnRepository,
+    IProjectRepository projectRepository,
     ICurrentUserService currentUserService)
     : ICommandHandler<DeleteCommentCommand>
 {
@@ -16,21 +18,18 @@ internal sealed class DeleteCommentHandler(
         DeleteCommentCommand command,
         CancellationToken cancellationToken)
     {
-        await EnsureCardExistsAsync(command.CardId, cancellationToken);
+        var card = await GetCardAsync(command.CardId, cancellationToken);
         var comment = await GetCommentAsync(command.CardId, command.CommentId, cancellationToken);
-        EnsureCurrentUserIsAuthor(comment);
+
+        await EnsureCanDeleteAsync(comment, card.ColumnId, cancellationToken);
 
         await commentRepository.DeleteAsync(comment, cancellationToken);
         return Unit.Value;
     }
 
-    private async Task EnsureCardExistsAsync(Guid cardId, CancellationToken cancellationToken)
-    {
-        var card = await cardRepository.GetByIdAsync(cardId, cancellationToken);
-
-        if (card is null)
-            throw new NotFoundException("Card não encontrado.");
-    }
+    private async Task<Card> GetCardAsync(Guid cardId, CancellationToken cancellationToken)
+        => await cardRepository.GetByIdAsync(cardId, cancellationToken)
+            ?? throw new NotFoundException("Card não encontrado.");
 
     private async Task<Comment> GetCommentAsync(Guid cardId, Guid commentId, CancellationToken cancellationToken)
     {
@@ -42,9 +41,22 @@ internal sealed class DeleteCommentHandler(
         return comment;
     }
 
-    private void EnsureCurrentUserIsAuthor(Comment comment)
+    private async Task EnsureCanDeleteAsync(Comment comment, Guid columnId, CancellationToken cancellationToken)
     {
-        if (comment.AuthorId != currentUserService.GetUserId())
-            throw new ForbiddenException("Apenas o autor pode remover o comentário.");
+        var userId = currentUserService.GetUserId();
+
+        // O autor sempre pode remover o próprio comentário.
+        if (comment.AuthorId == userId)
+            return;
+
+        // Caso contrário, só o dono do projeto pode remover (moderação).
+        var column = await columnRepository.GetByIdAsync(columnId, cancellationToken)
+            ?? throw new NotFoundException("Coluna não encontrada.");
+
+        var project = await projectRepository.GetByIdAsync(column.ProjectId, cancellationToken)
+            ?? throw new NotFoundException("Projeto não encontrado.");
+
+        if (project.OwnerId != userId)
+            throw new ForbiddenException("Apenas o autor ou o dono do projeto pode remover o comentário.");
     }
 }
