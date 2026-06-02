@@ -6,10 +6,6 @@ internal sealed class CreateProjectValidator : AbstractValidator<CreateProjectCo
 {
     public CreateProjectValidator()
     {
-        RuleFor(x => x.OwnerId)
-            .NotEmpty()
-            .WithMessage("O dono do projeto é obrigatório.");
-
         RuleFor(x => x.Name)
             .NotEmpty()
             .WithMessage("O nome do projeto é obrigatório.")
