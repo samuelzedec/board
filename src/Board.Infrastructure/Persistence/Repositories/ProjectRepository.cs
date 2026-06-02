@@ -15,10 +15,10 @@ internal sealed class ProjectRepository(BoardDbContext context)
             .AsNoTracking()
             .SingleOrDefaultAsync(p => p.Name == name && p.OwnerId == ownerId, cancellationToken);
     
-    public Task<Project[]> GetByOwnerAsync(Guid ownerId, CancellationToken cancellationToken = default)
-        => _table
+    public async Task<IReadOnlyList<Project>> GetByOwnerAsync(Guid ownerId, CancellationToken cancellationToken = default)
+        => await _table
             .AsNoTracking()
             .Where(p => p.OwnerId == ownerId)
             .OrderByDescending(p => p.CreatedAt)
-            .ToArrayAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
 }
