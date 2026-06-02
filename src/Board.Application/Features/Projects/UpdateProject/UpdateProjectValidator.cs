@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace Board.Application.Features.Projects.CreateProject;
+namespace Board.Application.Features.Projects.UpdateProject;
 
-internal sealed class CreateProjectValidator : AbstractValidator<CreateProjectCommand>
+internal sealed class UpdateProjectValidator : AbstractValidator<UpdateProjectCommand>
 {
-    public CreateProjectValidator()
+    public UpdateProjectValidator()
     {
         RuleFor(x => x.Name)
             .NotEmpty()

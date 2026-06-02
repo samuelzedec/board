@@ -4,5 +4,6 @@ public sealed record GetColumnsByProjectResponse(
     Guid Id,
     Guid ProjectId,
     string Name,
-    int Order
+    int Order,
+    DateTimeOffset CreatedAt
 );

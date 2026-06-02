@@ -12,7 +12,17 @@ internal sealed class ColumnRepository(BoardDbContext context)
         CancellationToken cancellationToken = default)
         => await _table
             .AsNoTracking()
-            .Where(c => c.ProjectId == projectId)
-            .OrderBy(c => c.Order)
+            .Where(column => column.ProjectId == projectId)
+            .OrderBy(column => column.Order)
             .ToListAsync(cancellationToken);
+
+    public async Task<Column?> GetByProjectIdAndOrderAsync(
+        Guid projectId,
+        int order,
+        CancellationToken cancellationToken = default)
+        => await _table
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                column => column.ProjectId == projectId && column.Order == order,
+                cancellationToken);
 }
