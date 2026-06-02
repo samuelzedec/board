@@ -1,4 +1,5 @@
-﻿using Board.Application.Features.Projects.CreateProject;
+using Board.Application.Features.Projects.CreateProject;
+using Board.Application.Features.Projects.GetProjects;
 using Board.Application.Features.Projects.UpdateProject;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,15 @@ namespace Board.Api.Controllers;
 [Route("api/projects")]
 public sealed class ProjectController(ISender sender) : ControllerBase
 {
+    [HttpGet]
+    [ProducesResponseType<IReadOnlyList<GetProjectsResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var response = await sender.Send(new GetProjectsQuery(), cancellationToken);
+        return Ok(response);
+    }
+
     [HttpPost]
     [ProducesResponseType<CreateProjectResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
