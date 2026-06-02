@@ -1,8 +1,9 @@
+using System.Text.Json.Serialization;
 using Mediator;
 
 namespace Board.Application.Features.Comments.CreateComment;
 
 public sealed record CreateCommentCommand(
-    Guid CardId,
+    [property: JsonIgnore] Guid CardId,
     string Content
 ) : ICommand<CreateCommentResponse>;
